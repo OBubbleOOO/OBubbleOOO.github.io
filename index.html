@@ -152,6 +152,44 @@
 
     <div class="post-header index">
         <h1 class="title">
+            <a href="/2020/06/05/DllImport/">
+                DllImport的一个坑
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2020-06-05</span>
+            
+            
+            
+                <span class="category">
+                    <a href="/categories/HelloWorld/">HelloWorld</a>
+                </span>
+            
+        </div>
+    </div>
+
+    
+        <div class="content">
+            <h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><p>前段时间写的一个winform程序在开发环境下没有任何问题，但是在运行环境上跑会出现很严重的BUG导致进程崩溃，报错信息如下：<br><img src="/images/DllImport/error.png"><br>显示找不到指定的模块，但是这个dll确实和exe在同一个目录下，相当奇怪。</p>
+<h3 id="进行的-失败-尝试"><a href="#进行的-失败-尝试" class="headerlink" title="进行的(失败)尝试"></a>进行的(失败)尝试</h3><ol>
+<li>既然exe目录下无法加载，我分别试着把dll复制到System32文件夹下与环境变量目录下再次运行，但是依旧失败，依旧是同一个错误；</li>
+<li>我又怀疑是代码里的dllimport没有加后缀名，并且win7（运行环境）和win10（开发环境）的某些差异导致了对dll文件名后缀要求的不同，于是我将:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK&quot;)<br></code></pre></td></tr></table></figure>
+修改为：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK.dll&quot;)<br></code></pre></td></tr></table></figure>
+依旧失败</li>
+</ol>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>最后我想起了之前(大半年前)调这个dll的时候出现过类似的问题，真正的原因是：缺少该dll的依赖库。<br>这个报错信息相当误导人，“无法加载DLL”指的是该dll，但是“找不到指定的模块”指的是它的依赖库而不是它本身导致一开始尝试的方向就错了。<br>最终我把缺少的库全部复制一遍到exe目录下，问题解决。</p>
+
+        </div>
+    
+
+</div>
+            
+                
+<div class="post">
+
+    <div class="post-header index">
+        <h1 class="title">
             <a href="/2020/06/05/TestArticle/">
                 TitleTest2
             </a>
@@ -163,7 +201,7 @@
             
             
                 <span class="category">
-                    <a href="/categories/测试/">测试</a>
+                    <a href="/categories/杂谈/">杂谈</a>
                 </span>
             
         </div>
@@ -259,6 +297,10 @@
         <ul>
             
             <li>
+                <a class="footer-post" href="/2020/06/05/DllImport/">DllImport的一个坑</a>
+            </li>
+            
+            <li>
                 <a class="footer-post" href="/2020/06/05/TestArticle/">TitleTest2</a>
             </li>
             
@@ -273,7 +315,11 @@
     <ul>
         
         <li>
-            <a class="footer-post" href="/categories/%E6%B5%8B%E8%AF%95/">测试</a>
+            <a class="footer-post" href="/categories/HelloWorld/">HelloWorld</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a>
         </li>
         
     </ul>
