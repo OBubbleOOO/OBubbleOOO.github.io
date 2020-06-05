@@ -10,12 +10,12 @@
 
     <!--Description-->
     
-        <meta name="description" content="遇到的问题前段时间写的一个winform程序在开发环境下没有任何问题，但是在运行环境上跑会出现很严重的BUG导致进程崩溃，报错信息如下：
+        <meta name="description" content="3337250176@qq.com
 
 
-显示找不到指定的模块，但是这个dll确实和exe在同一个目录下，相当奇怪。
-进行的(失败)尝试
-既然exe目录下无法加载，我分别试着把dll复制到System">
+
+
+17374609798">
     
 
     <!--Author-->
@@ -25,7 +25,7 @@
 
     <!--Open Graph Title-->
     
-        <meta property="og:title" content="DllImport的一个坑"/>
+        <meta property="og:title" content="联系"/>
     
 
     <!--Open Graph Description-->
@@ -50,7 +50,7 @@
 
     <!-- Title -->
     
-    <title>DllImport的一个坑 - 欧泡的摸鱼日记</title>
+    <title>联系 - 欧泡的摸鱼日记</title>
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
@@ -143,32 +143,28 @@
     <div class="col-sm-12">
 
         <!--Title and Logo-->
-        <header>
+        
+            <header>
     <div class="logo">
         <a href="/"><i class="logo-icon fa fa-code" aria-hidden="true"></i></a>
         
     </div>
 </header>
-
-        <section class="main">
-            
+            <section class="main">
+                
 <div class="post">
 
     <div class="post-header">
         <h1 class="title">
-            <a href="/2020/06/05/DllImport/">
-                DllImport的一个坑
+            <a href="/contact/index.html">
+                联系
             </a>
         </h1>
         <div class="post-info">
             
-                <span class="date">2020-06-05</span>
+                <span class="date">2020-06-06</span>
             
             
-            
-                <span class="category">
-                    <a href="/categories/HelloWorld/">HelloWorld</a>
-                </span>
             
         </div>
     </div>
@@ -179,35 +175,42 @@
         
 
         <!-- Post Content -->
-        <h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><p>前段时间写的一个winform程序在开发环境下没有任何问题，但是在运行环境上跑会出现很严重的BUG导致进程崩溃，报错信息如下：</p>
-<img src="/images/DllImport/error.png">
+        <font size="10">
+<center>
+<i class="fa fa-qq"></i>
+</center>
+<img src="/images/contact/qq.jpg" width=300 height=300>
 
-<p><br>显示找不到指定的模块，但是这个dll确实和exe在同一个目录下，相当奇怪。</p>
-<h3 id="进行的-失败-尝试"><a href="#进行的-失败-尝试" class="headerlink" title="进行的(失败)尝试"></a>进行的(失败)尝试</h3><ol>
-<li>既然exe目录下无法加载，我分别试着把dll复制到System32文件夹下与环境变量目录下再次运行，但是依旧失败，依旧是同一个错误；</li>
-<li>我又怀疑是代码里的dllimport没有加后缀名，并且win7（运行环境）和win10（开发环境）的某些差异导致了对dll文件名后缀要求的不同，于是我将:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK&quot;)<br></code></pre></td></tr></table></figure>
-修改为：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK.dll&quot;)<br></code></pre></td></tr></table></figure>
-依旧失败</li>
-</ol>
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>最后我想起了之前(大半年前)调这个dll的时候出现过类似的问题，真正的原因是：缺少该dll的依赖库。<br>这个报错信息相当误导人，“无法加载DLL”指的是该dll，但是“找不到指定的模块”指的是它的依赖库而不是它本身,导致一开始尝试的方向就错了。<br>最终我把缺少的库全部复制一遍到exe目录下，问题解决。</p>
+<br>
+<center>
+<i class="fa fa-wechat"></i>
+</center>
+<img src="/images/contact/wechat.png" width=300 height=300>
+
+<br>
+<center>
+<i class="fa fa-envelope-o"></i>
+<br>3337250176@qq.com
+</center>
+<br>
+<center>
+<i class="fa fa-phone"></i>
+<br>17374609798
+</center>
+</font>
 
     </div>
 
     
 
     
-        <div class="post-tags">
-            <i class="fa fa-tags" aria-hidden="true"></i>
-            <a href="/tags/C/">#C#</a> <a href="/tags/坑/">#坑</a>
-        </div>
-    
 
     <!-- Comments -->
     
 
 </div>
-        </section>
-
+            </section>
+        
     </div>
 </div>
 
