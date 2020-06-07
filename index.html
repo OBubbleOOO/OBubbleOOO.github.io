@@ -153,7 +153,7 @@
     <div class="post-header index">
         <h1 class="title">
             <a href="/2020/06/06/WinformAnchoring/">
-                WinformAnchoring
+                winform程序的分辨率适配
             </a>
         </h1>
         <div class="post-info">
@@ -162,12 +162,52 @@
             
             
             
+                <span class="category">
+                    <a href="/categories/HelloWorld/">HelloWorld</a>
+                </span>
+            
         </div>
     </div>
 
     
         <div class="content">
-            
+            <h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><p>刚开始用winform，做的是一个全屏窗口程序。但是在不同分辨率的环境下出现了很多适配的问题。比如说，在1080p的屏幕上能够正常工作的程序，放在4k的屏幕上部分控件就会缩在左上角。<br>我想要的效果是这样的：<br></br></p>
+<table>
+<tr>
+<td><a><img src="/images/WinformAnchoring/pic1.png" width=300 height=300></a></td>
+<td><a><img src="/images/WinformAnchoring/pic1.png" width=150 height=300></a></td>
+<td><a><img src="/images/WinformAnchoring/pic1.png" width=300 height=150></a></td>
+</tr>
+</table>
+很普通，就是像图片一样统一缩放而已。但是我查了半天，居然找不到在winform里调整哪个属性可以实现这样的效果。
+
+<h3 id="进行的（失败）尝试"><a href="#进行的（失败）尝试" class="headerlink" title="进行的（失败）尝试"></a>进行的（失败）尝试</h3><ol>
+<li>最开始是调整winform的anchor属性，但是这无法实现上面的效果。这个属性能够锚定控件的四条边与父控件四条边的距离。但这个属性仅在子控件与父控件严格重合的时候能实现我的需求。</li>
+<li>随后查了半天dock属性，一头雾水的同时根据各种效果图片确定了：这也不是我需要的效果</li>
+</ol>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>无奈之下，只能自己造轮子实现想要的效果。</p>
+<p>首先需要对我想要的效果进行精确描述：在窗口缩放时，除根控件（窗口本身）外，所有控件相对其父控件的位置比例与缩放比例不变。</p>
+<p>比如，如果一个控件的左上角在其父控件的正中心(0.5,0.5)位置处，无论如何缩放，这个比例坐标应保持不变。有了这个描述，数据结构和算法就很明显了</p>
+<p>首先是数据结构。窗体应用程序本身是一个控件的多叉树，在此基础上添加锚点数据做一层封装：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">AnchoredCtrl</span><br>&#123;<br>    <span class="hljs-keyword">private</span> Control _ctrl;<br>    <span class="hljs-comment">//相对父控件的坐标与宽高比</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">float</span> x, y, h, w;<br>    <span class="hljs-keyword">public</span> List&lt;AnchoredCtrl&gt; childern;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>算法也很简单，无非是两个方法：记录锚点数据与根据锚点数据进行拉伸缩放，这两个过程有很明显的递归性</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">AnchoredCtrl</span>(<span class="hljs-params">Control ctrl</span>)</span><br><span class="hljs-function"></span>&#123;<br>    _ctrl = ctrl;<br>    childern = <span class="hljs-keyword">new</span> List&lt;AnchoredCtrl&gt;();<br>    AnchorSelf();<br>    <span class="hljs-keyword">foreach</span> (Control item <span class="hljs-keyword">in</span> ctrl.Controls)<br>        childern.Add(<span class="hljs-keyword">new</span> AnchoredCtrl(item));<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">AnchorSelf</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_ctrl.Parent != <span class="hljs-literal">null</span>)<br>    &#123;<br>        x = _ctrl.Location.X / (<span class="hljs-keyword">float</span>)_ctrl.Parent.Width;<br>        y = _ctrl.Location.Y / (<span class="hljs-keyword">float</span>)_ctrl.Parent.Height;<br>        w = _ctrl.Width / (<span class="hljs-keyword">float</span>)_ctrl.Parent.Width;<br>        h = _ctrl.Height / (<span class="hljs-keyword">float</span>)_ctrl.Parent.Height;<br>    &#125;<br>&#125;<br><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">StrechSelf</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-keyword">if</span> (_ctrl.Parent != <span class="hljs-literal">null</span>)<br>    &#123;<br>        _ctrl.Location = <span class="hljs-keyword">new</span> Point((<span class="hljs-keyword">int</span>)(x * _ctrl.Parent.Width), (<span class="hljs-keyword">int</span>)(y * _ctrl.Parent.Height));<br>        _ctrl.Width = (<span class="hljs-keyword">int</span>)(w * _ctrl.Parent.Width);<br>        _ctrl.Height = (<span class="hljs-keyword">int</span>)(h * _ctrl.Parent.Height);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">//锚定ctrl与其所有子组件</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">AnchorAll</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>&#123;<br>    AnchorSelf();<br>    <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> item <span class="hljs-keyword">in</span> childern)<br>        item.AnchorAll();<br>&#125;<br><span class="hljs-comment">//拉伸ctrl与其所有子组件</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">StrechAll</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>&#123;<br>    StrechSelf();<br>    <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> item <span class="hljs-keyword">in</span> childern)<br>        item.StrechAll();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>由于我们需要在不同的环境下运行，所以需要锚定数据的导出与导入，我选择用自己比较熟悉的json序列化(LitJson)</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> <span class="hljs-title">ExportInfo</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>&#123;<br>    JsonData data = JsonMapper.ToJson(<span class="hljs-keyword">this</span>);<br>    <span class="hljs-keyword">return</span> data.ToString(); <br>&#125;<br><br><span class="hljs-comment">//该方法为了保证不将json接口暴露在外需要频繁地进行JsonData与string的转换</span><br><span class="hljs-comment">//但该方法只在初始化阶段调用一次故可以接受</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">ImportInfo</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> data</span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">//为了防止种种原因导致json与窗口结构不匹配，这里进行try catch</span><br>    <span class="hljs-comment">//不匹配的部分默认保留锚点信息</span><br>    <span class="hljs-keyword">try</span><br>    &#123;<br>        JsonData jsonData = JsonMapper.ToObject(data);<br>        x = <span class="hljs-keyword">float</span>.Parse(jsonData[<span class="hljs-string">"x"</span>].ToString());<br>        y = <span class="hljs-keyword">float</span>.Parse(jsonData[<span class="hljs-string">"y"</span>].ToString());<br>        h = <span class="hljs-keyword">float</span>.Parse(jsonData[<span class="hljs-string">"h"</span>].ToString());<br>        w = <span class="hljs-keyword">float</span>.Parse(jsonData[<span class="hljs-string">"w"</span>].ToString());<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; childern.Count; i++)<br>            childern[i].ImportInfo(jsonData[<span class="hljs-string">"childern"</span>][i].ToString());<br>    &#125;<br>    <span class="hljs-keyword">catch</span> (Exception)<br>    &#123;<br>        <span class="hljs-comment">//默认跳过该组件继续处理其它的部分，可在此处添加一些错误通知</span><br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>上面的“种种原因”包括了文件损坏与更新了控件但未更新本地锚点文件等常见情况。</p>
+<p>这个类已经完成其全部功能，接下来就是调用这些功能了。主要的思路为：在开发环境运行时每次启动程序导出并记录锚框数据；在运行环境下运行读取并导入锚框数据进行拉伸，这样可以保证运行环境与开发环境的效果一致，我一般通过一个特殊文件来标识自己的开发环境。</p>
+<p>在Form的Load函数或构造函数中添加如下代码：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs csharp">AnchoredCtrl anchored = <span class="hljs-keyword">new</span> AnchoredCtrl(<span class="hljs-keyword">this</span>);<br><span class="hljs-keyword">if</span>(File.Exists(<span class="hljs-string">"D://OBubble.tag"</span>))<br>&#123;<br>    JsonData anchorInfo = anchored.ExportInfo();<br>    File.WriteAllText(<span class="hljs-string">"AnchorInfo.json"</span>, anchorInfo.ToString());<br>&#125;<br><span class="hljs-keyword">else</span><br>&#123;<br>    File.ReadAllText(<span class="hljs-string">"AnchorInfo.json"</span>);<br>    anchored.StrechAll();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="存在的问题"><a href="#存在的问题" class="headerlink" title="存在的问题"></a>存在的问题</h3><p>这种方案目前发现的问题如下：</p>
+<ul>
+<li>字体的大小是根据字号计算的，不受width与Height属性的影响，故无法一同缩放；</li>
+<li>只能用于控件树结构不变的项目，对于动态添加/减少控件的项目无能为力；</li>
+</ul>
+
         </div>
     
 
@@ -201,7 +241,7 @@
 <img src="/images/DllImport/error.png">
 
 <p><br>显示找不到指定的模块，但是这个dll确实和exe在同一个目录下，相当奇怪。</p>
-<h3 id="进行的-失败-尝试"><a href="#进行的-失败-尝试" class="headerlink" title="进行的(失败)尝试"></a>进行的(失败)尝试</h3><ol>
+<h3 id="进行的（失败）尝试"><a href="#进行的（失败）尝试" class="headerlink" title="进行的（失败）尝试"></a>进行的（失败）尝试</h3><ol>
 <li>既然exe目录下无法加载，我分别试着把dll复制到System32文件夹下与环境变量目录下再次运行，但是依旧失败，依旧是同一个错误；</li>
 <li>我又怀疑是代码里的dllimport没有加后缀名，并且win7（运行环境）和win10（开发环境）的某些差异导致了对dll文件名后缀要求的不同，于是我将:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK&quot;)<br></code></pre></td></tr></table></figure>
 修改为：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK.dll&quot;)<br></code></pre></td></tr></table></figure>
@@ -240,7 +280,7 @@
         <div class="content">
             <p>测试文章，用于熟悉hexo与markdown，顺便作为语法笔记</p>
 <h2 id="二级标题测试"><a href="#二级标题测试" class="headerlink" title="二级标题测试"></a>二级标题测试</h2><h3 id="三级标题测试"><a href="#三级标题测试" class="headerlink" title="三级标题测试"></a>三级标题测试</h3><h3 id="代码测试"><a href="#代码测试" class="headerlink" title="代码测试"></a>代码测试</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#此处为命令行</span><br>$ sudo rm-rf<br></code></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c#">&#x2F;&#x2F;此处为c#<br>Console.WriteLine(&quot;Hello world&quot;);<br></code></pre></td></tr></table></figure>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-comment">//此处为c#</span><br>Console.WriteLine(<span class="hljs-string">"Hello world"</span>);<br></code></pre></td></tr></table></figure>
 
 <h3 id="链接测试"><a href="#链接测试" class="headerlink" title="链接测试"></a>链接测试</h3><p><a href="https://baidu.com" target="_blank" rel="noopener">傻逼百度</a></p>
 <h3 id="图片测试"><a href="#图片测试" class="headerlink" title="图片测试"></a>图片测试</h3> <img src="/images/marker2.jpg" width = "300" height = "300" alt="图片测试" />
@@ -322,7 +362,7 @@
         <ul>
             
             <li>
-                <a class="footer-post" href="/2020/06/06/WinformAnchoring/">WinformAnchoring</a>
+                <a class="footer-post" href="/2020/06/06/WinformAnchoring/">winform程序的分辨率适配</a>
             </li>
             
             <li>
@@ -344,11 +384,11 @@
     <ul>
         
         <li>
-            <a class="footer-post" href="/categories/HelloWorld/">HelloWorld</a>
+            <a class="footer-post" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a>
         </li>
         
         <li>
-            <a class="footer-post" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a>
+            <a class="footer-post" href="/categories/HelloWorld/">HelloWorld</a>
         </li>
         
     </ul>
