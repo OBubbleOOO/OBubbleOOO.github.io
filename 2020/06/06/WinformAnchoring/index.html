@@ -151,6 +151,7 @@
         <a href="/"><i class="logo-icon fa fa-code" aria-hidden="true"></i></a>
         
     </div>
+    <audio src="http://music.163.com/song/media/outer/url?id=1399286389.mp3" autoplay="autoplay"> </audio>
 </header>
 
         <section class="main">
@@ -211,7 +212,7 @@
 <p>上面的“种种原因”包括了文件损坏与更新了控件但未更新本地锚点文件等常见情况。</p>
 <p>这个类已经完成其全部功能，接下来就是调用这些功能了。主要的思路为：在开发环境运行时每次启动程序导出并记录锚框数据；在运行环境下运行读取并导入锚框数据进行拉伸，这样可以保证运行环境与开发环境的效果一致，我一般通过一个特殊文件来标识自己的开发环境。</p>
 <p>在Form的Load函数或构造函数中添加如下代码：</p>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs csharp">AnchoredCtrl anchored = <span class="hljs-keyword">new</span> AnchoredCtrl(<span class="hljs-keyword">this</span>);<br><span class="hljs-keyword">if</span>(File.Exists(<span class="hljs-string">"D://OBubble.tag"</span>))<br>&#123;<br>    JsonData anchorInfo = anchored.ExportInfo();<br>    File.WriteAllText(<span class="hljs-string">"AnchorInfo.json"</span>, anchorInfo.ToString());<br>&#125;<br><span class="hljs-keyword">else</span><br>&#123;<br>    File.ReadAllText(<span class="hljs-string">"AnchorInfo.json"</span>);<br>    anchored.StrechAll();<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs csharp">AnchoredCtrl anchored = <span class="hljs-keyword">new</span> AnchoredCtrl(<span class="hljs-keyword">this</span>);<br><span class="hljs-keyword">if</span>(File.Exists(<span class="hljs-string">"D://OBubble.tag"</span>))<br>&#123;<br>    File.WriteAllText(<span class="hljs-string">"AnchorInfo.json"</span>, anchored.ExportInfo());<br>&#125;<br><span class="hljs-keyword">else</span><br>&#123;<br>    anchored.ImportInfo(File.ReadAllText(<span class="hljs-string">"AnchorInfo.json"</span>));<br>    anchored.StrechAll();<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <h3 id="存在的问题"><a href="#存在的问题" class="headerlink" title="存在的问题"></a>存在的问题</h3><p>这种方案目前发现的问题如下：</p>
 <ul>
@@ -251,7 +252,7 @@
             <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 footer-about">
                 <h2>About</h2>
                 <p>
-                    暂无
+                    
                 </p>
             </div>
             
