@@ -143,10 +143,44 @@
             <h1 id="main-title" class="title">欧泡的摸鱼日记</h1>
         
     </div>
-    <audio src="http://music.163.com/song/media/outer/url?id=1399286389.mp3" autoplay="autoplay"> </audio>
 </header>
 
         <section class="main">
+            
+                
+<div class="post">
+
+    <div class="post-header index">
+        <h1 class="title">
+            <a href="/2020/06/12/SocketPortTest/">
+                C#中单客户端进程开启多个Socket连接测试
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2020-06-12</span>
+            
+            
+            
+                <span class="category">
+                    <a href="/categories/HelloWorld/">HelloWorld</a>
+                </span>
+            
+        </div>
+    </div>
+
+    
+        <div class="content">
+            <h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><p>学习TCP和socket的时候，各种书籍和资料对于端口的描述大部分是”标识了一个进程”，并且C#创建客户端socket的时候确实不需要向里面传入port参数，导致我一度以为一个客户端进程只能开启一个socket连接，系统根据进程标识自动占用一个端口。今天刚好有空，测试了一下我的想法。</p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><h5 id="服务端代码"><a href="#服务端代码" class="headerlink" title="服务端代码"></a>服务端代码</h5><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"><span class="hljs-keyword">string</span>[] args</span>)</span><br><span class="hljs-function"></span>&#123;<br>    Socket self = <span class="hljs-keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);<br>    EndPoint ep = <span class="hljs-keyword">new</span> IPEndPoint(IPAddress.Parse(<span class="hljs-string">"127.0.0.1"</span>), <span class="hljs-number">65529</span>);<br>    self.Bind(ep);<br>    self.Listen(<span class="hljs-number">10</span>);<br>    <span class="hljs-comment">//循环监听连接</span><br>    <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>)<br>    &#123;<br>        <span class="hljs-keyword">new</span> Client(self.Accept())<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Client</span><br>&#123;<br>    <span class="hljs-keyword">private</span> Socket _self;<br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">Client</span>(<span class="hljs-params">Socket soc</span>)</span><br><span class="hljs-function"></span>    &#123;<br>        _self = soc;<br>        Thread t = <span class="hljs-keyword">new</span> Thread(RecieveMsg);<br>        t.Start();<br>    &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">bool</span> Connected =&gt; _self.Connected;<br>    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">RecieveMsg</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function"></span>    &#123;<br>        <span class="hljs-comment">//连接成功后向客户端发送其端口号</span><br>        _self.Send(Encoding.UTF8.GetBytes((_self.RemoteEndPoint <span class="hljs-keyword">as</span> IPEndPoint).Port.ToString()));<br>        <span class="hljs-comment">//随后接收退出请求并关闭连接</span><br>        _self.Receive(<span class="hljs-keyword">new</span> <span class="hljs-keyword">byte</span>[<span class="hljs-number">10</span>]);<br>        _self.Close();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="客户端代码"><a href="#客户端代码" class="headerlink" title="客户端代码"></a>客户端代码</h5><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"><span class="hljs-keyword">string</span>[] args</span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">//创建两个socket并连接服务器</span><br>    Socket s1 = <span class="hljs-keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);<br>    Socket s2 = <span class="hljs-keyword">new</span> Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);<br>    EndPoint server = <span class="hljs-keyword">new</span> IPEndPoint(IPAddress.Parse(<span class="hljs-string">"127.0.0.1"</span>), <span class="hljs-number">65529</span>);<br>    self.Connect(server);<br>    s2.Connect(server);<br><br>    <span class="hljs-comment">//分别接收消息</span><br>    <span class="hljs-keyword">byte</span>[] buffer = <span class="hljs-keyword">new</span> <span class="hljs-keyword">byte</span>[<span class="hljs-number">1024</span>];<br>    <span class="hljs-keyword">int</span> len = self.Receive(buffer);<br>    Console.WriteLine(<span class="hljs-string">"s1:"</span>+Encoding.UTF8.GetString(buffer, <span class="hljs-number">0</span>, len));<br>    len = s2.Receive(buffer);<br>    Console.WriteLine(<span class="hljs-string">"s2:"</span>+Encoding.UTF8.GetString(buffer, <span class="hljs-number">0</span>, len));<br><br><br>    <span class="hljs-comment">//退出</span><br>    Console.ReadKey();<br>    self.Send(Encoding.UTF8.GetBytes(<span class="hljs-string">"exit"</span>));<br>    s2.Send(Encoding.UTF8.GetBytes(<span class="hljs-string">"exit"</span>));<br>    self.Close();<br>    s2.Close();<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>运行结果如下：<br><img src="../images/SocketPortTest/result.png" alt=""></p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>一个客户端进程可以同时发起多个socket连接，每个socket占用一个端口</p>
+
+        </div>
+    
+
+</div>
             
                 
 <div class="post">
@@ -244,7 +278,7 @@
 <p><br>显示找不到指定的模块，但是这个dll确实和exe在同一个目录下，相当奇怪。</p>
 <h3 id="进行的（失败）尝试"><a href="#进行的（失败）尝试" class="headerlink" title="进行的（失败）尝试"></a>进行的（失败）尝试</h3><ol>
 <li>既然exe目录下无法加载，我分别试着把dll复制到System32文件夹下与环境变量目录下再次运行，但是依旧失败，依旧是同一个错误；</li>
-<li>我又怀疑是代码里的dllimport没有加后缀名，并且win7（运行环境）和win10（开发环境）的某些差异导致了对dll文件名后缀要求的不同，于是我将:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK&quot;)<br></code></pre></td></tr></table></figure>
+<li>我又怀疑是代码里的dllimport没有加后缀名，并且win7（运行环境）和win10（开发环境）的某些差异导致了对dll文件名后缀要求的不同，于是我将:<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cSharp">DllImport(<span class="hljs-string">"SDK"</span>)<br></code></pre></td></tr></table></figure>
 修改为：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs c#">DllImport(&quot;SDK.dll&quot;)<br></code></pre></td></tr></table></figure>
 依旧失败</li>
 </ol>
@@ -279,7 +313,7 @@
 
     
         <div class="content">
-            <p>测试文章，用于熟悉hexo与markdown，顺便作为语法笔记</p>
+            <p>测试文章，用于熟悉hexo,html与markdown，顺便作为语法笔记</p>
 <h2 id="二级标题测试"><a href="#二级标题测试" class="headerlink" title="二级标题测试"></a>二级标题测试</h2><h3 id="三级标题测试"><a href="#三级标题测试" class="headerlink" title="三级标题测试"></a>三级标题测试</h3><h3 id="代码测试"><a href="#代码测试" class="headerlink" title="代码测试"></a>代码测试</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#此处为命令行</span><br>$ sudo rm-rf<br></code></pre></td></tr></table></figure>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-comment">//此处为c#</span><br>Console.WriteLine(<span class="hljs-string">"Hello world"</span>);<br></code></pre></td></tr></table></figure>
 
@@ -361,6 +395,10 @@
     <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 recent-posts">
         <h2>Recent Posts</h2>
         <ul>
+            
+            <li>
+                <a class="footer-post" href="/2020/06/12/SocketPortTest/">C#中单客户端进程开启多个Socket连接测试</a>
+            </li>
             
             <li>
                 <a class="footer-post" href="/2020/06/06/WinformAnchoring/">winform程序的分辨率适配</a>
