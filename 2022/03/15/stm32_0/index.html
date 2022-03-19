@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>  STM32学习日记 Day0 |    欧泡的摸鱼日记</title>
+  <title>  STM32学习笔记_0 |    欧泡的摸鱼日记</title>
   <meta name="description" content="做些想做的事，做些该做的事">
   <!-- 标签页图标 -->
   
@@ -109,8 +109,8 @@
 <article class="post-inner">
   <div class="post-content-outer">
     <div class="post-intro">
-      <div class="post-title animate__animated  animate__fadeInUp">STM32学习日记 day0</div>
-      <div class="meta-intro animate__animated  animate__fadeInUp">1月 27 2022</div>
+      <div class="post-title animate__animated  animate__fadeInUp">STM32学习笔记_0</div>
+      <div class="meta-intro animate__animated  animate__fadeInUp">3月 15 2022</div>
       
     </div>
     <div class="post-content-inner">
@@ -134,12 +134,6 @@
 <h2 id="Stm32基本结构"><a href="#Stm32基本结构" class="headerlink" title="Stm32基本结构"></a>Stm32基本结构</h2><h3 id="1-内存映射"><a href="#1-内存映射" class="headerlink" title="1. 内存映射"></a>1. 内存映射</h3><p>stm32采用内存与外设统一编址，通过为内存地址赋值的方式设置外设的寄存器赋值，进而控制外设。</p>
 <h3 id="2-时钟树"><a href="#2-时钟树" class="headerlink" title="2. 时钟树"></a>2. 时钟树</h3><p>除了cpu外，外设也需要时钟控制。但为了节省能耗，外设的时钟默认处于关闭状态，要使用某一个外设必须使能对应的时钟并为其配置合适的频率。</p>
 <p>Stm32编程的本质就是通过为内存地址赋值的方式控制挂载在总线上的外设寄存器，进而控制外设。</p>
-<hr>
-<h2 id="开发流程"><a href="#开发流程" class="headerlink" title="开发流程"></a>开发流程</h2><ol>
-<li>通过Stm32CubeMX进行基本配置；</li>
-<li>Keil5进行编程， 使用库函数+寄存器混合方式开发；</li>
-<li>ST Link进行程序的下载调试。</li>
-</ol>
 <hr>
 <h2 id="踩坑与教训"><a href="#踩坑与教训" class="headerlink" title="踩坑与教训"></a>踩坑与教训</h2><ol>
 <li>开发板上有两个usb接口，其中一个是USB Slave口（暂时没用到不太清楚是干什么的），烧录程序需要通过另一个口（USB转串口模块）。</li>
@@ -176,8 +170,19 @@
             
               
                 <li class="me base">
-                  <a  href="/2022/01/27/stm32_0/" class="post-categoris-bottom-link">
-                  STM32学习日记 day0
+                  <a  href="/2022/03/15/stm32_0/" class="post-categoris-bottom-link">
+                  STM32学习笔记_0
+                </a>
+                </li>
+              
+              
+            
+            
+            
+              
+                <li class="base">
+                  <a  href="/2022/03/18/stm32_1/" class="post-categoris-bottom-link">
+                  STM32学习笔记_1
                 </a>
                 </li>
               
@@ -197,7 +202,7 @@
       <div class="post-content-inner-space">
         
           <div class="space-toc-main animate__animated  animate__fadeInUp">
-            <ol class="space-toc"><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%8A%80%E6%9C%AF%E6%A0%88%E7%BB%93%E6%9E%84"><span class="space-toc-text">技术栈结构</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#Stm32%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="space-toc-text">Stm32基本结构</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B"><span class="space-toc-text">开发流程</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E8%B8%A9%E5%9D%91%E4%B8%8E%E6%95%99%E8%AE%AD"><span class="space-toc-text">踩坑与教训</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%9D%82%E8%B0%88"><span class="space-toc-text">杂谈</span></a></li></ol>
+            <ol class="space-toc"><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%8A%80%E6%9C%AF%E6%A0%88%E7%BB%93%E6%9E%84"><span class="space-toc-text">技术栈结构</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#Stm32%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84"><span class="space-toc-text">Stm32基本结构</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E8%B8%A9%E5%9D%91%E4%B8%8E%E6%95%99%E8%AE%AD"><span class="space-toc-text">踩坑与教训</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%9D%82%E8%B0%88"><span class="space-toc-text">杂谈</span></a></li></ol>
            </div>
         
       </div>

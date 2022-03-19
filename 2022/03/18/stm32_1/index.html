@@ -1,0 +1,309 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>  STM32学习笔记_1 |    欧泡的摸鱼日记</title>
+  <meta name="description" content="做些想做的事，做些该做的事">
+  <!-- 标签页图标 -->
+  
+
+  <!-- 图标库 -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- 动画库 -->
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fushaolei/cdn-white@1.0/css/animate.css"/>
+  
+  <!-- css文件 -->
+  
+<link rel="stylesheet" href="/css/white.css">
+
+  <!-- 代码高亮 -->
+  
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+
+<body>
+
+<div class="menu-outer">
+    <div class="menu-inner">
+      <div class="menu-site-name  animate__animated  animate__fadeInUp">
+        <a href="/">
+          欧泡的摸鱼日记
+        </a>
+        
+      </div>
+      <div class="menu-group">
+        <ul class="menu-ul">
+        
+          <a href="/" class="nav-link">
+            <li class="menu-li  animate__animated  animate__fadeInUp">
+              HOME
+            </li>
+          </a>
+        
+          <a href="/archives" class="nav-link">
+            <li class="menu-li  animate__animated  animate__fadeInUp">
+              BLOG
+            </li>
+          </a>
+        
+        
+          <li class="menu-li animate__animated  animate__fadeInUp" id="sort">
+             分类
+             <div class="categories-outer " id="sort-div">
+               <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a></li></ul>
+             </div>
+          </li>
+        
+        
+          <li class="menu-li animate__animated  animate__fadeInUp" id="mobile-menu">
+            <i class="ri-menu-line"></i>
+          </li>
+        
+        </ul>
+
+      </div>
+
+    </div>
+</div>
+<div id="mobile-main" class="animate__animated  animate__fadeIn">
+  <div class="mobile-menu-inner">
+    <div class="mobile-menu-site-name animate__animated  animate__fadeInUp">
+      <a href="/">
+        欧泡的摸鱼日记
+      </a>
+    </div>
+    <div class="mobile-menu-group" id="mobile-close">
+      <i class="ri-close-line"></i>
+    </div>
+
+  </div>
+
+  <div class="mobile-menu-div">
+  
+    <a href="/" class="mobile-nav-link">
+      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
+        <span>HOME</span>
+      </div>
+    </a>
+  
+    <a href="/archives" class="mobile-nav-link">
+      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
+        <span>BLOG</span>
+      </div>
+    </a>
+  
+  
+  </div>
+
+
+</div>
+
+<div class="body-outer">
+  <div class="body-inner">
+    
+<article class="post-inner">
+  <div class="post-content-outer">
+    <div class="post-intro">
+      <div class="post-title animate__animated  animate__fadeInUp">STM32学习笔记_1</div>
+      <div class="meta-intro animate__animated  animate__fadeInUp">3月 18 2022</div>
+      
+    </div>
+    <div class="post-content-inner">
+      <div class="post-content-inner-space">
+
+      </div>
+      <div class="post-content-main animate__animated  animate__fadeInUp">
+        <!-- top型目录 -->
+        
+        <p>鸽了两天，主要是被一些奇奇怪怪的坑给卡住了<br>解决之后（其实没有完全解决）回来继续写点东西</p>
+<hr>
+<h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><p>即通用输入/输出口，获取/输出数字电平状态。</p>
+<p>在STM32中，GPIO的输入/输出各有四种状态，不作详细说明（其实是因为我也不太懂，上/下拉输入输出对我来说够用了）。</p>
+<p>GPIO作为输入时可以用作中断触发源，常用于按键中断。</p>
+<p>与51不同，由于时钟树与多种IO模式的存在，GPIO在使用前需要进行相关的配置。</p>
+<p>以下为我对GPIO的个人理解：</p>
+<p>结合上一篇博客的内容，我们可以将STM32芯片抽象为如下模型：对4GB内存空间内的各个寄存器进行读写，最终控制144个引脚（随型号不同可能有删减）的电平进行读写。</p>
+<p>使用GPIO是直接对引脚的电平进行读写，而使用其他片上外设是通过特定的协议对引脚进行间接读写。因此，片上外设相当于对引脚的一层封装。</p>
+<p>而这种封装同样可以使用代码进行。比较经典的是delay函数的实现，通过执行nop操作可以达到和定时器一样的效果。</p>
+<p>缺点也很明显，nop操作会大量占用CPU资源。因此，片上外设真正的作用其实是通过封装一些常用协议，从而使用简单的电路替CPU完成一些操作，从而挤出更多运算资源。</p>
+<h2 id="从寄存器到CubeMX"><a href="#从寄存器到CubeMX" class="headerlink" title="从寄存器到CubeMX"></a>从寄存器到CubeMX</h2><p>首先吐槽一下寄存器这个叫法，我学习的时候满脑子都是汇编的r0, ds, pc, ax什么的，疑惑着为什么寄存器会有内存地址。</p>
+<p>寄存器需要这样理解：对于外设这是寄存器，而对于CPU他只是诸多内存单元中的一个，应当看作内存处理。</p>
+<p>GPIO操作的流程是：先进行相关配置（时钟配置，IO模式配置），然后对GPIO的控制寄存器对应的内存地址进行读写。</p>
+<p>事实上，所有的外设都是这样一套流程。上一篇博客中提到，STM32编程本质上就是对内存单元进行操作从而控制自己想要控制的外设。</p>
+<p>操控哪些内存单元？如何操纵这些内存单元（每个字节每个位具体的含义是什么）？这就需要翻阅STM32文档了。</p>
+<p>因此，最终的代码看上去会是像这样：</p>
+<pre><code>//初始化时钟
+*(unsigned int *)内存地址0 = 值0；
+//将IO口xx设置为推挽输出模式
+*(unsigned int *)内存地址1 = (值1  &amp;&amp; xxxx) || (yyyy &lt;&lt; zzzz)；
+//将IO口xx设置为低电平
+*(unsigned int *)内存地址2 = 值2；
+......
+</code></pre>
+<p>可维护性差，可移植性接近没有，可读性全靠注释。从软件工程的角度看，这样的代码堪称灾难，这也就是我在上一篇博客中提到的硬件入门难的原因。</p>
+<p>因此，库函数应运而生。通过几步简单的封装可以大幅提升代码质量。</p>
+<p>首先，给内存地址起个别名:</p>
+<pre><code>#define *(unsigned int *)内存地址0 CLOCK_SETTING
+#define *(unsigned int *)内存地址1 GPIO_MODE
+......
+</code></pre>
+<p>这样做的好处有两个：一是增强可读性，二是将与芯片内存映射规则的耦合从主代码逻辑移动到了宏定义头文件中。</p>
+<p>其次，将赋值操作封装为函数：</p>
+<pre><code>void SetGPIO(byte io, byte pin, byte set_or_reset)
+&#123;
+    ......
+    //执行具体寄存器操作
+&#125;
+</code></pre>
+<p>前面说过查阅文档主要是为了了解两个问题：操控哪里和怎么操控。宏定义解决操控哪里的问题，函数定义解决如何操控。通过这两个封装，我们可以省略掉对于STM32文档的查阅过程，取而代之的是查阅相应的库函数文档。同样是文档，具体的函数比位定义要清晰简洁多了。</p>
+<p>可读性是一方面，封装的另一个更重要的作用是将变化的部分解耦，提升可移植性。对于硬件平台A，我们在函数库A中定义了SetGPIO；对于硬件平台B，只需要根据其硬件结构设计一个函数库B，我们就能通过简单地替换函数库，在不动主逻辑的情况下完成代码移植。</p>
+<p>问题在于：硬件平台A与硬件平台B的公司很可能不是同一家，公司B定义的对应函数名不叫SetGPIO怎么办？解决方案也有，我们可以在其上再添加一层封装，屏蔽掉函数名的变化，增加一个跨平台层的函数库。</p>
+<p>另一个解决方案是制定一个标准，使各个公司尽量使用同样的函数原型定义。标准由谁来制定？CPU内核设计者ARM再合适不过，于是CMSIS诞生了。</p>
+<p>有了上述封装与标准制定，我们终于可以摆脱芯片手册，专注于业务逻辑了。</p>
+<p>但是优化空间仍然存在。经过一段时间的开发，我们发现每个工程都有着相似的初始化流程：选定芯片型号，导入函数库，时钟树初始化，相关外设初始化，编写具体的业务逻辑。除了业务逻辑，前面的部分属于重复劳动工作，但又不能省略。怎么封装这部分工作？答案是通过图形化界面，于是CubeMX诞生了。</p>
+<hr>
+<h2 id="踩坑与教训"><a href="#踩坑与教训" class="headerlink" title="踩坑与教训"></a>踩坑与教训</h2><ol>
+<li>在开发时通常使用USB转串口模块与开发板进行通信/程序烧录，但是要注意功率问题。其一是笔记本在没有接通电源时的功率问题，其二是使用USB-HUB时，多个板子的功率都要通过同一个USB口传输，可能会导致功率不足。我花费了大约十几个小时寻找串口通信只能单向传输数据的问题，程序和CubeMX配置来来回回看了无数次，最后的解决方案是给芯片单独接一个USB口。</li>
+</ol>
+<h2 id="杂谈"><a href="#杂谈" class="headerlink" title="杂谈"></a>杂谈</h2><p>先说说STM32的教程。</p>
+<p>虽然说相关教程铺天盖地，但是能看的教程真的没几个。包括正点、普中、野火等厂商，看得出来授课老师是水平很高的硬件工程师，但他们不是一个好的老师。标题写着零基础入门，但我一个计科专业的学生看得云里雾里。</p>
+<p>除了编程语法和数电模电的部分看起来没有压力，其他的部分我始终不能理解。什么时候该看原理图？什么时候该打开芯片手册？应该查哪个部分？为什么突然跳到这个寄存器的部分了？这些关键的东西完全没有提及。</p>
+<p>我一直有着这样的观点：从设计者的角度出发，你才能真正理解一个工具的用途。因此，了解技术的发展史很有必要，而这正是大部分教程所欠缺的，也是本篇博客集中探讨的角度。</p>
+<p>在这里安利一下海创电子的教程。光是GPIO就讲了将近10节，以GPIO为例详细描述了STM32编程的发展历史，给我带来了很大的帮助。本篇博客的部分内容来源于此，并添加了一些我自己的见解与补充。</p>
+<p>再谈谈单片机发展的方向。</p>
+<p>计算机技术的核心思想是什么？任何一个计科专业的学生都会不假思索地告诉你：是抽象与封装。虽然没有一本课本明确提出这个观点，但是每一本课本的每一章每一页都在反复述说这个事实。在摩尔定律的加持下，封装带来的有限的性能损失可以忽略不计，从而抽象的层级也越来越高。寄存器到库函数与GUI只是这个趋势下一个微不足道的缩影。</p>
+<p>令人不解的是，每个新工具，新封装层级的出现都会有人批判，经典言论有“winform拖控件也算写代码？”“用CubeMX就是偷懒，硬件工程师必须了解寄存器”“大牛们都用命令行编译程序，用IDE怎么能了解编译链接过程呢”。</p>
+<p>然而最后人们还是会选择能够提升生产力的工具，逐渐忽略底层逻辑，需要用到的时候再去深入了解，历史一次次地证明了这种方式的正确性。在摩尔定律油尽灯枯之前，这种正确性会一直持续下去。</p>
+<p>单片机的抽象层级目前已经发展到oop与微型操作系统，这表现出了另一个趋势：单片机与PC之间的差异正在模糊。从麦金托什的年代到现在，PC的技术栈结构并没有太大的变化。如果将技术栈比作一个光谱，那么PC软件开发占据的位置始终是网络+操作系统+高级编程语言这一层级。而单片机的技术栈光谱已经从电路-&gt;计组-&gt;微原-&gt;c语言一路延申到了操作系统与高级编程语言层级，技术栈间的空白正在消融，两个波段正在逐渐接合。</p>
+<p>那时的高性能芯片嵌入式开发也许更像是一个定制化的PC？总之必然与现在的嵌入式开发技术截然不同。、</p>
+
+        <!-- 分类文章 -->
+        
+          <div class="post-categoris-bottom">
+            <div class="post-categoris-name">学习</div>
+            <ul>
+            
+            
+              
+            
+            
+            
+              
+                <li class="base">
+                  <a  href="/2022/03/15/stm32_0/" class="post-categoris-bottom-link">
+                  STM32学习笔记_0
+                </a>
+                </li>
+              
+              
+            
+            
+            
+              
+                <li class="me base">
+                  <a  href="/2022/03/18/stm32_1/" class="post-categoris-bottom-link">
+                  STM32学习笔记_1
+                </a>
+                </li>
+              
+              
+            
+            
+            
+              
+            
+            
+            </ul>
+
+          </div>
+
+        
+      </div>
+      <div class="post-content-inner-space">
+        
+          <div class="space-toc-main animate__animated  animate__fadeInUp">
+            <ol class="space-toc"><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#GPIO"><span class="space-toc-text">GPIO</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E4%BB%8E%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%B0CubeMX"><span class="space-toc-text">从寄存器到CubeMX</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E8%B8%A9%E5%9D%91%E4%B8%8E%E6%95%99%E8%AE%AD"><span class="space-toc-text">踩坑与教训</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%9D%82%E8%B0%88"><span class="space-toc-text">杂谈</span></a></li></ol>
+           </div>
+        
+      </div>
+   </div>
+    <!-- 评论 -->
+    
+    <div class="bottom-comments-outer">
+      <div class="bottom-comments-inner">
+        <!-- valine -->
+        
+        <!-- Gitalk -->
+        
+          <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container" style="margin-top: 100px;"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '620fcfbba93094e62427',
+        clientSecret: '5fb7efd77ab9b9a5682ebb78d51a06d370c76a10',
+        id: "Comments",
+        repo: 'BlogComments',
+        owner: 'OBubbleOOO',
+        admin: 'OBubbleOOO',
+        title: 'OBubbleBlog'
+    })
+    gitalk.render('gitalk-container')
+</script>
+        
+        <!-- livere -->
+        
+        </div>
+      </div>
+    
+  </div>
+</article>
+  </div>
+</div>
+
+
+
+<!-- 如果是home模式的话，不在首页就显示footer，如果不是home模式的话 所有都显示footer -->
+
+  <div class="footer-outer animate__animated  animate__fadeInUp">
+    <div class="footer-inner">
+    <div class="footer-text">
+    <p>@Copyright：著作权归博主所有，转载请注明出处</p>
+
+    </div>
+    <div class="footer-contact">
+    <ul class="footer-ul">
+        
+        <li class="footer-li">
+            <a href="https://github.com/OBubbleOOO" target="_blank">
+                <i class="ri-github-line"></i>
+            </a>
+        </li>
+        
+        <li class="footer-li">
+            <a href="mailto:3337250176@qq.com" target="_blank">
+                <i class="ri-mail-line"></i>
+            </a>
+        </li>
+        
+    </ul>
+    </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script src="/js/white.js"></script>
+
+
+
+</body>
+</html>
