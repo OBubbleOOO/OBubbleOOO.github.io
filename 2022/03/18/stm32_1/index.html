@@ -20,19 +20,19 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="鸽了两天，主要是被一些奇奇怪怪的坑给卡住了解决之后（其实没有完全解决）回来继续写点东西  GPIO即通用输入&#x2F;输出口，获取&#x2F;输出数字电平状态。 在STM32中，GPIO的输入&#x2F;输出各有四种状态，不作详细说明（其实是因为我也不太懂，上&#x2F;下拉输入输出对我来说够用了）。 GPIO作为输入时可以用作中断触发源，常用于按键中断。 与51不同，由于时钟树与多种IO模式的存在，GPIO在使用前需要进行相关的配置">
+  <meta name="description" content="GPIO：寄存器，库函数与CubeMX">
 <meta property="og:type" content="article">
 <meta property="og:title" content="STM32学习笔记_1">
 <meta property="og:url" content="http://example.com/2022/03/18/stm32_1/index.html">
 <meta property="og:site_name" content="欧泡的摸鱼日记">
-<meta property="og:description" content="鸽了两天，主要是被一些奇奇怪怪的坑给卡住了解决之后（其实没有完全解决）回来继续写点东西  GPIO即通用输入&#x2F;输出口，获取&#x2F;输出数字电平状态。 在STM32中，GPIO的输入&#x2F;输出各有四种状态，不作详细说明（其实是因为我也不太懂，上&#x2F;下拉输入输出对我来说够用了）。 GPIO作为输入时可以用作中断触发源，常用于按键中断。 与51不同，由于时钟树与多种IO模式的存在，GPIO在使用前需要进行相关的配置">
+<meta property="og:description" content="GPIO：寄存器，库函数与CubeMX">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-03-18T15:15:00.000Z">
-<meta property="article:modified_time" content="2022-03-20T18:08:52.000Z">
+<meta property="article:modified_time" content="2022-03-21T05:51:11.743Z">
 <meta property="article:author" content="欧泡果奶欧欧欧">
+<meta property="article:tag" content="毕业设计">
 <meta property="article:tag" content="硬件">
 <meta property="article:tag" content="STM32">
-<meta property="article:tag" content="毕业设计">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://example.com/2022/03/18/stm32_1/">
@@ -183,7 +183,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-21 02:08:52" itemprop="dateModified" datetime="2022-03-21T02:08:52+08:00">2022-03-21</time>
+                <time title="修改时间：2022-03-21 13:51:11" itemprop="dateModified" datetime="2022-03-21T13:51:11+08:00">2022-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -196,6 +196,7 @@
             </span>
 
           
+            <div class="post-description">GPIO：寄存器，库函数与CubeMX</div>
 
         </div>
       </header>
@@ -273,9 +274,9 @@
 
       <footer class="post-footer">
           <div class="post-tags">
+              <a href="/tags/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/" rel="tag"># 毕业设计</a>
               <a href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag"># 硬件</a>
               <a href="/tags/STM32/" rel="tag"># STM32</a>
-              <a href="/tags/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/" rel="tag"># 毕业设计</a>
           </div>
 
         
@@ -372,7 +373,7 @@
         <span class="site-state-item-name">分类</span>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span>
       </div>
   </nav>
