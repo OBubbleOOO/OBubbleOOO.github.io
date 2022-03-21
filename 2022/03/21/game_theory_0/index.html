@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="逛各种游戏社区时经常需要一遍遍地科普游戏常识，索性整理一下写(shui)几篇博客。内容不会很深，仅作科普用。 先从通用数值模型说起吧。  如何评估一名角色的战斗力一个显而易见的原则：我打得过你，说明我的战斗力(下称$\color{green}{power}$)高于你，反之亦然。 但是游戏机制千变万化，各种克制关系和玩家操作的影响使得上述原则难以实际量化。为此，我们首先需要简化游戏的数值模型，以此为">
+<meta property="og:type" content="article">
+<meta property="og:title" content="游戏常识0——数值模型（上）">
+<meta property="og:url" content="http://example.com/2022/03/21/game_theory_0/index.html">
+<meta property="og:site_name" content="欧泡的摸鱼日记">
+<meta property="og:description" content="逛各种游戏社区时经常需要一遍遍地科普游戏常识，索性整理一下写(shui)几篇博客。内容不会很深，仅作科普用。 先从通用数值模型说起吧。  如何评估一名角色的战斗力一个显而易见的原则：我打得过你，说明我的战斗力(下称$\color{green}{power}$)高于你，反之亦然。 但是游戏机制千变万化，各种克制关系和玩家操作的影响使得上述原则难以实际量化。为此，我们首先需要简化游戏的数值模型，以此为">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-21T05:25:00.000Z">
+<meta property="article:modified_time" content="2022-03-21T05:30:51.634Z">
+<meta property="article:author" content="欧泡果奶欧欧欧">
+<meta property="article:tag" content="游戏">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/03/21/game_theory_0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>游戏常识0——数值模型（上） | 欧泡的摸鱼日记</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">欧泡的摸鱼日记</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/21/game_theory_0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="欧泡果奶欧欧欧">
+      <meta itemprop="description" content="记录一些想法和技术问题">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欧泡的摸鱼日记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          游戏常识0——数值模型（上）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-21 13:25:00 / 修改时间：13:30:51" itemprop="dateCreated datePublished" datetime="2022-03-21T13:25:00+08:00">2022-03-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B8%B8%E6%88%8F/" itemprop="url" rel="index"><span itemprop="name">游戏</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>逛各种游戏社区时经常需要一遍遍地科普游戏常识，索性整理一下写(shui)几篇博客。内容不会很深，仅作科普用。</p>
+<p>先从通用数值模型说起吧。</p>
+<hr>
+<h2 id="如何评估一名角色的战斗力"><a href="#如何评估一名角色的战斗力" class="headerlink" title="如何评估一名角色的战斗力"></a>如何评估一名角色的战斗力</h2><p>一个显而易见的原则：我打得过你，说明我的战斗力(下称$\color{green}{power}$)高于你，反之亦然。</p>
+<p>但是游戏机制千变万化，各种克制关系和玩家操作的影响使得上述原则难以实际量化。为此，我们首先需要简化游戏的数值模型，以此为原型进行讨论并逐步添加其他条件。该模型如下：</p>
+<ol>
+<li>角色仅有每秒输出（下称$ \color{green}{dps} $）与生命值（下称$\color{green}{hp}$）两个属性，我们使用其二元组描述一个角色，如A(x,y)表示角色A每秒输出为x，生命值为y；</li>
+<li>以战斗开始为时刻0，角色互相攻击，以自身dps为速率（连续）降低敌方生命值，当某一方死亡时战斗结束；</li>
+<li>角色不能移动或逃跑。</li>
+</ol>
+<p>这样的模型下，如何通过dps与hp判断角色A是否能够击败角色B（角色A的战斗力是否高于角色B）？很简单，角色A在被角色B击杀之前能够击杀角色B即可，也就是角色A在死亡前能够打出的总输出高于角色B的生命值，也就是：</p>
+<script type="math/tex; mode=display">\ damage(A) = dps(A)t(A)=\frac {dps(A)hp(A)}{dps(B)}>hp(B)</script><p>即：</p>
+<script type="math/tex; mode=display">\ dps(A)hp(A) > dps(B)hp(B)</script><p>因此，我们可以用dps*hp作为一个角色的战力标准。如：power(A(1,3))=3&lt;power(B(2,2))=4,故角色A打不过角色B。</p>
+<hr>
+<h2 id="数值稀释，战斗力乘区"><a href="#数值稀释，战斗力乘区" class="headerlink" title="数值稀释，战斗力乘区"></a>数值稀释，战斗力乘区</h2><p>在游戏内我们的资源是有限的，这里的资源可以是金币，装备栏位等各种能够提升属性的东西。将其抽象简化后，我们可以定义其为技能点（下称$\color{green}{point}$):用于提升属性的资源，一个单位的技能点可以提升一个单位的任意属性。如果我们将(1,1)定为单位战斗力模型，那么我们有：</p>
+<script type="math/tex; mode=display">\ point=(dps-1)+(hp-1)</script><p>这引入了一个问题：怎样分配技能点可以使战斗力最大化？由前的计算面可以看出，A(1,3)与B(2,2)有着相同的技能点数2，但是战斗力不同。</p>
+<p>考虑这样一个极端模型：(1，100)，战斗力为100。如果我们手上有一个point，将其分配到dps上，那么属性变为(2,100)，战斗力变为200，提升了100%；转而将其分配到hp上，属性变为(1,101)，战斗力变为101，仅提升1%。</p>
+<p>这就是我们常说的稀释：由于先前分配了太多技能点在同一属性上，继续提升该属性能够得到的收益越来越低，也就是在该属性上新分配的技能点起到的作用被“稀释”了。</p>
+<p>事实上，通过基本不等式我们能够很简单地得到一个结论：尽量使dps与hp相同能够最大化战斗力（这里的“相同”是对于简化模型来说的，实际游戏中应乘以某一比例系数），也就是说需要将技能点分配给最薄弱的属性。</p>
+<p>如果我们将dps细分为两项：攻击力(下称$\color{green}{atk}$)与攻击速度(下称$\color{green}{spd}$)，即dps=atk*spd，那么我们的战斗力公式变为：</p>
+<script type="math/tex; mode=display">\ power=dps*hp=atk*spd*hp</script><p>此时我们在上面的推论仍然适用，也就是将技能点分配给最低的属性收益是最高的。事实上，我们可以推广至一般情形：如果战斗力可以分为N个属性相乘：</p>
+<script type="math/tex; mode=display">\ power=property_1*property_2*......*property_N</script><p>那么在这N个属性上平均分配技能点的收益是最高的。</p>
+<p>上面的描述有一个不严谨的地方：不同属性对战斗力影响的关系未必全部都是相乘。譬如，某个角色的普通攻击为物理伤害，假设裸装下其dps为1；我们现在给他两个词条，一是“物理伤害增加100%”，二是“普通攻击伤害增加100%”，请问他此时的dps为？</p>
+<p>可以是1<em>(1+100%+100%)=3，也可以是1</em>(1+100%)*(1+100%)=4，取决于游戏机制。</p>
+<p>因此，我们再次修正战斗力模型如下：</p>
+<script type="math/tex; mode=display">\ power=(1+property_{11}+property_{12}+......)*(1+property_{21}+property_{22}+......)*.......</script><p>在上面的公式中，如果第一个括号内的和非常大，那么即使$property<em>{11}$的值很小，我们将技能点分配给$property</em>{11}$的收益也是很低的。可以发现我们之前的推论仍然在生效，只不过从“尽量使各属性相同”变为“尽量使各括号内的值相同”。我们把每个括号称作一个乘区，称在同一个括号内的两个属性“在同一个乘区”。同一个乘区内的属性会相互稀释。</p>
+<p>如何判断两个属性是否在一个乘区内呢？仍然以上面的物理伤害与普通攻击伤害词条为例。两个词条的卸下/佩戴状态共有四种组合方式，在四种组合方式下分别打出一次攻击并记录伤害，列出矩阵：</p>
+<script type="math/tex; mode=display">
+\begin{array}{c|lcr}
+伤害 & \text{无物理词条} & \text{有物理词条} \\
+\hline
+无普攻词条 & d_{00} & d_{01} \\
+有普攻词条 & d_{10} & d_{11} \\
+\end{array}</script><p>证明过程略，直接说结论：如果两个词条在不同乘区，那么它们对应的行/列向量线性相关。对于上述矩阵，其行列式为0，即：</p>
+<script type="math/tex; mode=display">\ d_{00}d_{11}-d_{10}d_{01}=0</script><hr>
+<h2 id="杂谈的杂谈"><a href="#杂谈的杂谈" class="headerlink" title="杂谈的杂谈"></a>杂谈的杂谈</h2><p>本文提及的战斗力数学模型并不适用于所有游戏。个人经验表明：伤害计算越复杂、数字越大的游戏与该模型的契合度越好，例如暗黑三，DNF，原神等（伤害以万甚至亿为单位）；而对于MOBA类游戏（伤害在几百上千的范畴），职业定位、角色技能与个人操作起到了更为关键的作用，上述模型能够起到的作用比较有限；对于旷野之息、MC等游戏（伤害通常在个位数到几十点），该模型的描述能力接近于0。</p>
+<p>另一方面，不同属性的获取难度是有区别的，因此具有独立乘区并且少见的属性就十分吃香。没错，我说的就是易伤。所以经常能够看见百分之四十几物伤加成词条不如百分之十几的易伤词条优先级高的情况。</p>
+<p>另外，相比于不出暴击的角色，出暴击本身平白多出两个乘区（暴率和暴伤）。但暴率是个特殊的乘区：它没有基础值，这就意味着暴率叠起来之前暴伤作用很小。因此，暴击装备往往在后期表现出色。</p>
+<p>先写到这里，其余内容下次再更吧。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B8%B8%E6%88%8F/" rel="tag"># 游戏</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/19/graduation_project_design/" rel="prev" title="毕设—简介与规划">
+      <i class="fa fa-chevron-left"></i> 毕设—简介与规划
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AF%84%E4%BC%B0%E4%B8%80%E5%90%8D%E8%A7%92%E8%89%B2%E7%9A%84%E6%88%98%E6%96%97%E5%8A%9B"><span class="nav-number">1.</span> <span class="nav-text">如何评估一名角色的战斗力</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E5%80%BC%E7%A8%80%E9%87%8A%EF%BC%8C%E6%88%98%E6%96%97%E5%8A%9B%E4%B9%98%E5%8C%BA"><span class="nav-number">2.</span> <span class="nav-text">数值稀释，战斗力乘区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%82%E8%B0%88%E7%9A%84%E6%9D%82%E8%B0%88"><span class="nav-number">3.</span> <span class="nav-text">杂谈的杂谈</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">欧泡果奶欧欧欧</p>
+  <div class="site-description" itemprop="description">记录一些想法和技术问题</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">欧泡果奶欧欧欧</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

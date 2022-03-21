@@ -1,125 +1,211 @@
-
-
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>  STM32学习笔记_1 |    欧泡的摸鱼日记</title>
-  <meta name="description" content="做些想做的事，做些该做的事">
-  <!-- 标签页图标 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="鸽了两天，主要是被一些奇奇怪怪的坑给卡住了解决之后（其实没有完全解决）回来继续写点东西  GPIO即通用输入&#x2F;输出口，获取&#x2F;输出数字电平状态。 在STM32中，GPIO的输入&#x2F;输出各有四种状态，不作详细说明（其实是因为我也不太懂，上&#x2F;下拉输入输出对我来说够用了）。 GPIO作为输入时可以用作中断触发源，常用于按键中断。 与51不同，由于时钟树与多种IO模式的存在，GPIO在使用前需要进行相关的配置">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32学习笔记_1">
+<meta property="og:url" content="http://example.com/2022/03/18/stm32_1/index.html">
+<meta property="og:site_name" content="欧泡的摸鱼日记">
+<meta property="og:description" content="鸽了两天，主要是被一些奇奇怪怪的坑给卡住了解决之后（其实没有完全解决）回来继续写点东西  GPIO即通用输入&#x2F;输出口，获取&#x2F;输出数字电平状态。 在STM32中，GPIO的输入&#x2F;输出各有四种状态，不作详细说明（其实是因为我也不太懂，上&#x2F;下拉输入输出对我来说够用了）。 GPIO作为输入时可以用作中断触发源，常用于按键中断。 与51不同，由于时钟树与多种IO模式的存在，GPIO在使用前需要进行相关的配置">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-18T15:15:00.000Z">
+<meta property="article:modified_time" content="2022-03-20T18:08:52.000Z">
+<meta property="article:author" content="欧泡果奶欧欧欧">
+<meta property="article:tag" content="硬件">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="毕业设计">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/03/18/stm32_1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>STM32学习笔记_1 | 欧泡的摸鱼日记</title>
   
 
-  <!-- 图标库 -->
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
-  <!-- 动画库 -->
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fushaolei/cdn-white@1.0/css/animate.css"/>
-  
-  <!-- css文件 -->
-  
-<link rel="stylesheet" href="/css/white.css">
-
-  <!-- 代码高亮 -->
-  
-<meta name="generator" content="Hexo 6.0.0"></head>
 
 
-<body>
 
-<div class="menu-outer">
-    <div class="menu-inner">
-      <div class="menu-site-name  animate__animated  animate__fadeInUp">
-        <a href="/">
-          欧泡的摸鱼日记
-        </a>
-        
-      </div>
-      <div class="menu-group">
-        <ul class="menu-ul">
-        
-          <a href="/" class="nav-link">
-            <li class="menu-li  animate__animated  animate__fadeInUp">
-              HOME
-            </li>
-          </a>
-        
-          <a href="/archives" class="nav-link">
-            <li class="menu-li  animate__animated  animate__fadeInUp">
-              BLOG
-            </li>
-          </a>
-        
-        
-          <li class="menu-li animate__animated  animate__fadeInUp" id="sort">
-             分类
-             <div class="categories-outer " id="sort-div">
-               <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/">毕业设计</a></li></ul>
-             </div>
-          </li>
-        
-        
-          <li class="menu-li animate__animated  animate__fadeInUp" id="mobile-menu">
-            <i class="ri-menu-line"></i>
-          </li>
-        
-        </ul>
 
-      </div>
 
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
-</div>
-<div id="mobile-main" class="animate__animated  animate__fadeIn">
-  <div class="mobile-menu-inner">
-    <div class="mobile-menu-site-name animate__animated  animate__fadeInUp">
-      <a href="/">
-        欧泡的摸鱼日记
-      </a>
-    </div>
-    <div class="mobile-menu-group" id="mobile-close">
-      <i class="ri-close-line"></i>
-    </div>
-
   </div>
 
-  <div class="mobile-menu-div">
-  
-    <a href="/" class="mobile-nav-link">
-      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
-        <span>HOME</span>
-      </div>
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">欧泡的摸鱼日记</h1>
+      <span class="logo-line-after"><i></i></span>
     </a>
-  
-    <a href="/archives" class="mobile-nav-link">
-      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
-        <span>BLOG</span>
-      </div>
-    </a>
-  
-  
   </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
 
 
 </div>
+    </header>
 
-<div class="body-outer">
-  <div class="body-inner">
     
-<article class="post-inner">
-  <div class="post-content-outer">
-    <div class="post-intro">
-      <div class="post-title animate__animated  animate__fadeInUp">STM32学习笔记_1</div>
-      <div class="meta-intro animate__animated  animate__fadeInUp">3月 18 2022</div>
-      
-    </div>
-    <div class="post-content-inner">
-      <div class="post-content-inner-space">
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
 
-      </div>
-      <div class="post-content-main animate__animated  animate__fadeInUp">
-        <!-- top型目录 -->
-        
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/18/stm32_1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="欧泡果奶欧欧欧">
+      <meta itemprop="description" content="记录一些想法和技术问题">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欧泡的摸鱼日记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          STM32学习笔记_1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-18 23:15:00" itemprop="dateCreated datePublished" datetime="2022-03-18T23:15:00+08:00">2022-03-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-21 02:08:52" itemprop="dateModified" datetime="2022-03-21T02:08:52+08:00">2022-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
         <p>鸽了两天，主要是被一些奇奇怪怪的坑给卡住了<br>解决之后（其实没有完全解决）回来继续写点东西</p>
 <hr>
 <h2 id="GPIO"><a href="#GPIO" class="headerlink" title="GPIO"></a>GPIO</h2><p>即通用输入/输出口，获取/输出数字电平状态。</p>
@@ -130,7 +216,7 @@
 <p>结合上一篇博客的内容，我们可以将STM32芯片抽象为如下模型：对4GB内存空间内的各个寄存器进行读写，最终控制144个引脚（随型号不同可能有删减）的电平进行读写。</p>
 <p>使用GPIO是直接对引脚的电平进行读写，而使用其他片上外设是通过特定的协议对引脚进行间接读写。因此，片上外设相当于对引脚的一层封装。</p>
 <p>而这种封装同样可以使用代码进行。比较经典的是delay函数的实现，通过执行nop操作可以达到和定时器一样的效果。</p>
-<p>缺点也很明显，nop操作会大量占用CPU资源。因此，片上外设真正的作用其实是通过封装一些常用协议，从而使用简单的电路替CPU完成一些操作，从而挤出更多运算资源。</p>
+<p>缺点也很明显，nop操作会大量占用CPU资源。因此，片上外设的本质是通过封装一些常用协议，从而使用简单的电路替CPU完成一些操作，从而挤出更多运算资源。</p>
 <h2 id="从寄存器到CubeMX"><a href="#从寄存器到CubeMX" class="headerlink" title="从寄存器到CubeMX"></a>从寄存器到CubeMX</h2><p>首先吐槽一下寄存器这个叫法，我学习的时候满脑子都是汇编的r0, ds, pc, ax什么的，疑惑着为什么寄存器会有内存地址。</p>
 <p>寄存器需要这样理解：对于外设这是寄存器，而对于CPU他只是诸多内存单元中的一个，应当看作内存处理。</p>
 <p>GPIO操作的流程是：先进行相关配置（时钟配置，IO模式配置），然后对GPIO的控制寄存器对应的内存地址进行读写。</p>
@@ -144,23 +230,20 @@
 //将IO口xx设置为低电平
 *(unsigned int *)内存地址2 = 值2；
 ......
-</code></pre>
-<p>可维护性差，可移植性接近没有，可读性全靠注释。从软件工程的角度看，这样的代码堪称灾难，这也就是我在上一篇博客中提到的硬件入门难的原因。</p>
+</code></pre><p>可维护性差，可移植性接近没有，可读性全靠注释。从软件工程的角度看，这样的代码堪称灾难，这也就是我在上一篇博客中提到的硬件入门难的原因。</p>
 <p>因此，库函数应运而生。通过几步简单的封装可以大幅提升代码质量。</p>
 <p>首先，给内存地址起个别名:</p>
 <pre><code>#define *(unsigned int *)内存地址0 CLOCK_SETTING
 #define *(unsigned int *)内存地址1 GPIO_MODE
 ......
-</code></pre>
-<p>这样做的好处有两个：一是增强可读性，二是将与芯片内存映射规则的耦合从主代码逻辑移动到了宏定义头文件中。</p>
+</code></pre><p>这样做的好处有两个：一是增强可读性，二是将与芯片内存映射规则的耦合从主代码逻辑移动到了宏定义头文件中。</p>
 <p>其次，将赋值操作封装为函数：</p>
 <pre><code>void SetGPIO(byte io, byte pin, byte set_or_reset)
 &#123;
     ......
     //执行具体寄存器操作
 &#125;
-</code></pre>
-<p>前面说过查阅文档主要是为了了解两个问题：操控哪里和怎么操控。宏定义解决操控哪里的问题，函数定义解决如何操控。通过这两个封装，我们可以省略掉对于STM32文档的查阅过程，取而代之的是查阅相应的库函数文档。同样是文档，具体的函数比位定义要清晰简洁多了。</p>
+</code></pre><p>前面说过查阅文档主要是为了了解两个问题：操控哪里和怎么操控。宏定义解决操控哪里的问题，函数定义解决如何操控。通过这两个封装，我们可以省略掉对于STM32文档的查阅过程，取而代之的是查阅相应的库函数文档。同样是文档，具体的函数比位定义要清晰简洁多了。</p>
 <p>可读性是一方面，封装的另一个更重要的作用是将变化的部分解耦，提升可移植性。对于硬件平台A，我们在函数库A中定义了SetGPIO；对于硬件平台B，只需要根据其硬件结构设计一个函数库B，我们就能通过简单地替换函数库，在不动主逻辑的情况下完成代码移植。</p>
 <p>问题在于：硬件平台A与硬件平台B的公司很可能不是同一家，公司B定义的对应函数名不叫SetGPIO怎么办？解决方案也有，我们可以在其上再添加一层封装，屏蔽掉函数名的变化，增加一个跨平台层的函数库。</p>
 <p>另一个解决方案是制定一个标准，使各个公司尽量使用同样的函数原型定义。标准由谁来制定？CPU内核设计者ARM再合适不过，于是CMSIS诞生了。</p>
@@ -182,143 +265,201 @@
 <p>单片机的抽象层级目前已经发展到oop与微型操作系统，这表现出了另一个趋势：单片机与PC之间的差异正在模糊。从麦金托什的年代到现在，PC的技术栈结构并没有太大的变化。如果将技术栈比作一个光谱，那么PC软件开发占据的位置始终是网络+操作系统+高级编程语言这一层级。而单片机的技术栈光谱已经从电路-&gt;计组-&gt;微原-&gt;c语言一路延申到了操作系统与高级编程语言层级，技术栈间的空白正在消融，两个波段正在逐渐接合。</p>
 <p>那时的高性能芯片嵌入式开发也许更像是一个定制化的PC？总之必然与现在的嵌入式开发技术截然不同。</p>
 
-        <!-- 分类文章 -->
-        
-          <div class="post-categoris-bottom">
-            <div class="post-categoris-name">学习</div>
-            <ul>
-            
-            
-              
-            
-            
-            
-              
-                <li class="base">
-                  <a  href="/2022/03/15/stm32_0/" class="post-categoris-bottom-link">
-                  STM32学习笔记_0
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-                <li class="me base">
-                  <a  href="/2022/03/18/stm32_1/" class="post-categoris-bottom-link">
-                  STM32学习笔记_1
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-            
-            
-            
-              
-                <li class="base">
-                  <a  href="/2022/03/19/stm32_2/" class="post-categoris-bottom-link">
-                  STM32学习笔记_2
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-            
-            
-            </ul>
+    </div>
 
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag"># 硬件</a>
+              <a href="/tags/STM32/" rel="tag"># STM32</a>
+              <a href="/tags/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/" rel="tag"># 毕业设计</a>
           </div>
 
         
-      </div>
-      <div class="post-content-inner-space">
+
+
         
-          <div class="space-toc-main animate__animated  animate__fadeInUp">
-            <ol class="space-toc"><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#GPIO"><span class="space-toc-text">GPIO</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E4%BB%8E%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%B0CubeMX"><span class="space-toc-text">从寄存器到CubeMX</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E8%B8%A9%E5%9D%91%E4%B8%8E%E6%95%99%E8%AE%AD"><span class="space-toc-text">踩坑与教训</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E6%9D%82%E8%B0%88"><span class="space-toc-text">杂谈</span></a></li></ol>
-           </div>
-        
-      </div>
-   </div>
-    <!-- 评论 -->
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/15/stm32_0/" rel="prev" title="STM32学习笔记_0">
+      <i class="fa fa-chevron-left"></i> STM32学习笔记_0
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/19/stm32_2/" rel="next" title="STM32学习笔记_2">
+      STM32学习笔记_2 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
     
-    <div class="bottom-comments-outer">
-      <div class="bottom-comments-inner">
-        <!-- valine -->
-        
-        <!-- Gitalk -->
-        
-          <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
-<div id="gitalk-container" style="margin-top: 100px;"></div>
-<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: '620fcfbba93094e62427',
-        clientSecret: '5fb7efd77ab9b9a5682ebb78d51a06d370c76a10',
-        id: "Comments",
-        repo: 'BlogComments',
-        owner: 'OBubbleOOO',
-        admin: 'OBubbleOOO',
-        title: 'OBubbleBlog'
-    })
-    gitalk.render('gitalk-container')
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
 </script>
-        
-        <!-- livere -->
-        
+
         </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GPIO"><span class="nav-number">1.</span> <span class="nav-text">GPIO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%B0CubeMX"><span class="nav-number">2.</span> <span class="nav-text">从寄存器到CubeMX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B8%A9%E5%9D%91%E4%B8%8E%E6%95%99%E8%AE%AD"><span class="nav-number">3.</span> <span class="nav-text">踩坑与教训</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%82%E8%B0%88"><span class="nav-number">4.</span> <span class="nav-text">杂谈</span></a></li></ol></div>
       </div>
-    
-  </div>
-</article>
-  </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">欧泡果奶欧欧欧</p>
+  <div class="site-description" itemprop="description">记录一些想法和技术问题</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
 </div>
 
 
 
-<!-- 如果是home模式的话，不在首页就显示footer，如果不是home模式的话 所有都显示footer -->
-
-  <div class="footer-outer animate__animated  animate__fadeInUp">
-    <div class="footer-inner">
-    <div class="footer-text">
-    <p>@Copyright：著作权归博主所有，转载请注明出处</p>
+      </div>
 
     </div>
-    <div class="footer-contact">
-    <ul class="footer-ul">
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
         
-        <li class="footer-li">
-            <a href="https://github.com/OBubbleOOO" target="_blank">
-                <i class="ri-github-line"></i>
-            </a>
-        </li>
+
         
-        <li class="footer-li">
-            <a href="mailto:3337250176@qq.com" target="_blank">
-                <i class="ri-mail-line"></i>
-            </a>
-        </li>
-        
-    </ul>
-    </div>
-    </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">欧泡果奶欧欧欧</span>
 </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
 
 
 
 
 
 
-<script src="/js/white.js"></script>
 
 
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
 
 </body>
 </html>

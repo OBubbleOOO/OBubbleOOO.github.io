@@ -1,125 +1,211 @@
-
-
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>  STM32学习笔记_2 |    欧泡的摸鱼日记</title>
-  <meta name="description" content="做些想做的事，做些该做的事">
-  <!-- 标签页图标 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="GPIO、串口与PWM是我与上位机通信&#x2F;控制舵机所需的所有IO模式，所以这应该是我最后一篇STM32学习博客。（如果之后将与上位机的通信方式从蓝牙改为wifi可能会再写一篇）。 STM32的中断中断及中断嵌套的概念不再复述。 STM32使用内核外设NVIC进行中断嵌套的控制。NVIC支持84个中断源（16内核中断+68外部中断，随芯片型号可能有删减）。除了系统内核的中断外，其余中断均可配置一个主优">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32学习笔记_2">
+<meta property="og:url" content="http://example.com/2022/03/19/stm32_2/index.html">
+<meta property="og:site_name" content="欧泡的摸鱼日记">
+<meta property="og:description" content="GPIO、串口与PWM是我与上位机通信&#x2F;控制舵机所需的所有IO模式，所以这应该是我最后一篇STM32学习博客。（如果之后将与上位机的通信方式从蓝牙改为wifi可能会再写一篇）。 STM32的中断中断及中断嵌套的概念不再复述。 STM32使用内核外设NVIC进行中断嵌套的控制。NVIC支持84个中断源（16内核中断+68外部中断，随芯片型号可能有删减）。除了系统内核的中断外，其余中断均可配置一个主优">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-19T05:29:00.000Z">
+<meta property="article:modified_time" content="2022-03-20T18:08:02.000Z">
+<meta property="article:author" content="欧泡果奶欧欧欧">
+<meta property="article:tag" content="硬件">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="毕业设计">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/03/19/stm32_2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>STM32学习笔记_2 | 欧泡的摸鱼日记</title>
   
 
-  <!-- 图标库 -->
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
-  <!-- 动画库 -->
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fushaolei/cdn-white@1.0/css/animate.css"/>
-  
-  <!-- css文件 -->
-  
-<link rel="stylesheet" href="/css/white.css">
-
-  <!-- 代码高亮 -->
-  
-<meta name="generator" content="Hexo 6.0.0"></head>
 
 
-<body>
 
-<div class="menu-outer">
-    <div class="menu-inner">
-      <div class="menu-site-name  animate__animated  animate__fadeInUp">
-        <a href="/">
-          欧泡的摸鱼日记
-        </a>
-        
-      </div>
-      <div class="menu-group">
-        <ul class="menu-ul">
-        
-          <a href="/" class="nav-link">
-            <li class="menu-li  animate__animated  animate__fadeInUp">
-              HOME
-            </li>
-          </a>
-        
-          <a href="/archives" class="nav-link">
-            <li class="menu-li  animate__animated  animate__fadeInUp">
-              BLOG
-            </li>
-          </a>
-        
-        
-          <li class="menu-li animate__animated  animate__fadeInUp" id="sort">
-             分类
-             <div class="categories-outer " id="sort-div">
-               <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%B0%88/">杂谈</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/">毕业设计</a></li></ul>
-             </div>
-          </li>
-        
-        
-          <li class="menu-li animate__animated  animate__fadeInUp" id="mobile-menu">
-            <i class="ri-menu-line"></i>
-          </li>
-        
-        </ul>
 
-      </div>
 
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
-</div>
-<div id="mobile-main" class="animate__animated  animate__fadeIn">
-  <div class="mobile-menu-inner">
-    <div class="mobile-menu-site-name animate__animated  animate__fadeInUp">
-      <a href="/">
-        欧泡的摸鱼日记
-      </a>
-    </div>
-    <div class="mobile-menu-group" id="mobile-close">
-      <i class="ri-close-line"></i>
-    </div>
-
   </div>
 
-  <div class="mobile-menu-div">
-  
-    <a href="/" class="mobile-nav-link">
-      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
-        <span>HOME</span>
-      </div>
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">欧泡的摸鱼日记</h1>
+      <span class="logo-line-after"><i></i></span>
     </a>
-  
-    <a href="/archives" class="mobile-nav-link">
-      <div class="mobile-menu-child animate__animated  animate__fadeInUp">
-        <span>BLOG</span>
-      </div>
-    </a>
-  
-  
   </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
 
 
 </div>
+    </header>
 
-<div class="body-outer">
-  <div class="body-inner">
     
-<article class="post-inner">
-  <div class="post-content-outer">
-    <div class="post-intro">
-      <div class="post-title animate__animated  animate__fadeInUp">STM32学习笔记_2</div>
-      <div class="meta-intro animate__animated  animate__fadeInUp">3月 19 2022</div>
-      
-    </div>
-    <div class="post-content-inner">
-      <div class="post-content-inner-space">
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
 
-      </div>
-      <div class="post-content-main animate__animated  animate__fadeInUp">
-        <!-- top型目录 -->
-        
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/19/stm32_2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="欧泡果奶欧欧欧">
+      <meta itemprop="description" content="记录一些想法和技术问题">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欧泡的摸鱼日记">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          STM32学习笔记_2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-19 13:29:00" itemprop="dateCreated datePublished" datetime="2022-03-19T13:29:00+08:00">2022-03-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-21 02:08:02" itemprop="dateModified" datetime="2022-03-21T02:08:02+08:00">2022-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
         <p>GPIO、串口与PWM是我与上位机通信/控制舵机所需的所有IO模式，所以这应该是我最后一篇STM32学习博客。（如果之后将与上位机的通信方式从蓝牙改为wifi可能会再写一篇）。</p>
 <h2 id="STM32的中断"><a href="#STM32的中断" class="headerlink" title="STM32的中断"></a>STM32的中断</h2><p>中断及中断嵌套的概念不再复述。</p>
 <p>STM32使用内核外设NVIC进行中断嵌套的控制。NVIC支持84个中断源（16内核中断+68外部中断，随芯片型号可能有删减）。除了系统内核的中断外，其余中断均可配置一个主优先级与一个副优先级。主优先级高的中断可以打断主优先级低的中断，进行中断嵌套，否则无法打断，进入中断等待队列。当一个中断函数处理完成后，从中断等待队列中选择副优先级最高的中断进行处理。若副优先级相同，则选择中断号最小的中断进行处理。</p>
@@ -134,8 +220,7 @@
 <pre><code>while(CheckState() == State.Waiting)
     ;
 //do sth...
-</code></pre>
-<p>如果我的主逻辑是一个while(true)循环，那么我可以把上面的等待逻辑嵌入到主逻辑中，从而达到不阻塞主逻辑的效果：</p>
+</code></pre><p>如果我的主逻辑是一个while(true)循环，那么我可以把上面的等待逻辑嵌入到主逻辑中，从而达到不阻塞主逻辑的效果：</p>
 <pre><code>while(1)
 &#123;
     MainLogic();
@@ -144,14 +229,13 @@
         //do sth...
     &#125;
 &#125;
-</code></pre>
-<p>我以前用51写贪吃蛇时使用的就是这样的方式，在不阻塞主线程的情况下检测按键的落下/抬起。到这里，已经有了一丝中断的影子。</p>
+</code></pre><p>我以前用51写贪吃蛇时使用的就是这样的方式，在不阻塞主线程的情况下检测按键的落下/抬起。到这里，已经有了一丝中断的影子。</p>
 <p>这里的问题在于，if语句是否会执行、执行间隔是多少取决于MainLogic的实现。里面可能是几个简单的计算赋值语句，也可能需要进行一个排序操作，甚至可能直接阻塞。另一方面，按键输入处理函数也有同样的问题。如果按键输入处理函数阻塞，那么我们将无法返回代码主逻辑。</p>
 <p>一个解决方案是将MainLogic细分为几个原子操作，类似这样：</p>
 <pre><code>int state = 0;
 void MainLogic0()
 &#123;
-    //do sth...    
+    //do sth...
 &#125;
 void MainLogic1()
 &#123;
@@ -173,9 +257,8 @@ void MainLogic()
         ......
     &#125;
 &#125;
-</code></pre>
-<p>顺序结构的细分十分简单，分支与循环结构的细分相对复杂，而函数的调用只需要保证所有子函数进行了同样的细分就能很轻易地完成。但是，细分粒度的控制依旧是人为处理，麻烦的同时可靠性与可读性低。</p>
-<p>一个更合理的解决方案是从编译器下手，将CheckState语句插入到机器指令中（我在Unity的热更插件IFix中见过类似的“打桩”操作），每执行几条机器指令执行一次中断检测处理函数。在中断检测处理函数中读写我们设置的中断触发寄存器，中断嵌套栈等内容，就真正完成了一套纯软件的中断系统。</p>
+</code></pre><p>顺序结构的细分十分简单，分支与循环结构的细分相对复杂，而函数的调用只需要保证所有子函数进行了同样的细分就能很轻易地完成。但是，细分粒度的控制依旧是人为处理，麻烦的同时可靠性与可读性低。</p>
+<p>一个更合理的解决方案是从编译器下手，将CheckState语句插入到机器指令中（在Unity的热更插件IFix中有类似的“打桩”操作），每执行几条机器指令执行一次中断检测处理函数。在中断检测处理函数中读写我们设置的中断触发寄存器，中断嵌套栈等内容，就真正完成了一套纯软件的中断系统。</p>
 <p>（以上分析在许多细节处的可行性略存疑，不过大致是这么个思路。）</p>
 <p>如果更进一步呢？如果我们每执行一个机器指令进行一次中断检测呢？如果把中断检测与中断嵌套、跳转控制交由专门的硬件进行呢？这就是CPU内核中断控制与NVIC了。</p>
 <p>在大一第一次听说中断的概念时，我经过分析得出一个结论：中断的关键在于触发器，CPU中断控制的底层必然以某个触发器作为关键元件。所以在学习微原时我理所当然地懵了：这不还是轮询吗，只是把轮询交由硬件实现并强制每个周期执行一次而已。</p>
@@ -188,147 +271,205 @@ void MainLogic()
 <p>以下为我对PWM的见解：</p>
 <p>PWM本质上是一个DAC转换器，将数字信号转变为了模拟信号。在调试PWM输出时，可以直接用万用表测量其电压。如PWM高电平为5V，低电平为0V，用电压表测得输出口电压为2V，则可以判断其占空比为40%。</p>
 <p>但是这种转换方式十分简单粗暴。假设数字信号调制的周期为t，PWM的脉冲周期为nt，那么其占空比可以为0/n、1/n、2/n……n/n共n+1种状态，而nt的时间内通过调制数字信号能够输出的不同状态数量最大为2^n个，也就是说通信速率的利用率实际上只有(n+1)/(2^n)，而通常为了提高电机的精度，n取值一般较大（在机械臂中更是如此。如果某个关节与末端执行器距离为1m，那么0.1°的关节误差就会导致末端执行器偏移足足0.5mm），这就会导致带宽损失接近指数级增长。</p>
-<p>其优点为解码电路简单，以我有限的知识最简单粗暴的解码方式就是加个电感，完全不需要任何芯片就能将PWM信号转变为较稳定的模拟电压信号。解码电路简单导致了成本的降低、稳定性的提高与体积的缩小。</p>
-<p>但以我的理解，电机完全可以只接收模拟信号，将ADC的功能部分交给控制板完成。这样，我既可以接个PWM解码外设继续使用低成本的PWM电路，也可以使用更为复杂精细的DAC-ADC芯片。这样做的好处还有很多，为什么业界最终采用了将PWM解码做进电机的方案？</p>
+<p>其优点为解码电路简单，以我有限的知识最简单粗暴的解码方式就是加个低通滤波，完全不需要任何芯片就能将PWM信号转变为较稳定的模拟电压信号。解码电路简单导致了成本的降低、稳定性的提高与体积的缩小。</p>
+<p>但以我的理解，电机完全可以只接收模拟电平信号，将ADC的功能部分交给控制板完成。这样，我既可以接个PWM解码外设继续使用低成本的PWM电路，也可以使用更为复杂精细的DAC-ADC芯片。这样做的好处还有很多，为什么业界最终采用了将PWM解码做进电机的方案？</p>
 <p>也许这个问题要再学习个几年才能得到解答了。</p>
 
-        <!-- 分类文章 -->
-        
-          <div class="post-categoris-bottom">
-            <div class="post-categoris-name">学习</div>
-            <ul>
-            
-            
-              
-            
-            
-            
-              
-                <li class="base">
-                  <a  href="/2022/03/15/stm32_0/" class="post-categoris-bottom-link">
-                  STM32学习笔记_0
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-                <li class="base">
-                  <a  href="/2022/03/18/stm32_1/" class="post-categoris-bottom-link">
-                  STM32学习笔记_1
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-            
-            
-            
-              
-                <li class="me base">
-                  <a  href="/2022/03/19/stm32_2/" class="post-categoris-bottom-link">
-                  STM32学习笔记_2
-                </a>
-                </li>
-              
-              
-            
-            
-            
-              
-            
-            
-            </ul>
+    </div>
 
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%A1%AC%E4%BB%B6/" rel="tag"># 硬件</a>
+              <a href="/tags/STM32/" rel="tag"># STM32</a>
+              <a href="/tags/%E6%AF%95%E4%B8%9A%E8%AE%BE%E8%AE%A1/" rel="tag"># 毕业设计</a>
           </div>
 
         
-      </div>
-      <div class="post-content-inner-space">
+
+
         
-          <div class="space-toc-main animate__animated  animate__fadeInUp">
-            <ol class="space-toc"><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#STM32%E7%9A%84%E4%B8%AD%E6%96%AD"><span class="space-toc-text">STM32的中断</span></a></li><li class="space-toc-item space-toc-level-2"><a class="space-toc-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%E4%B8%8EPWM"><span class="space-toc-text">定时器与PWM</span></a></li></ol>
-           </div>
-        
-      </div>
-   </div>
-    <!-- 评论 -->
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/18/stm32_1/" rel="prev" title="STM32学习笔记_1">
+      <i class="fa fa-chevron-left"></i> STM32学习笔记_1
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/03/19/meta_blog/" rel="next" title="MetaBlog">
+      MetaBlog <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
     
-    <div class="bottom-comments-outer">
-      <div class="bottom-comments-inner">
-        <!-- valine -->
-        
-        <!-- Gitalk -->
-        
-          <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
-<div id="gitalk-container" style="margin-top: 100px;"></div>
-<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-    var gitalk = new Gitalk({
-        clientID: '620fcfbba93094e62427',
-        clientSecret: '5fb7efd77ab9b9a5682ebb78d51a06d370c76a10',
-        id: "Comments",
-        repo: 'BlogComments',
-        owner: 'OBubbleOOO',
-        admin: 'OBubbleOOO',
-        title: 'OBubbleBlog'
-    })
-    gitalk.render('gitalk-container')
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
 </script>
-        
-        <!-- livere -->
-        
+
         </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#STM32%E7%9A%84%E4%B8%AD%E6%96%AD"><span class="nav-number">1.</span> <span class="nav-text">STM32的中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%E4%B8%8EPWM"><span class="nav-number">2.</span> <span class="nav-text">定时器与PWM</span></a></li></ol></div>
       </div>
-    
-  </div>
-</article>
-  </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">欧泡果奶欧欧欧</p>
+  <div class="site-description" itemprop="description">记录一些想法和技术问题</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
 </div>
 
 
 
-<!-- 如果是home模式的话，不在首页就显示footer，如果不是home模式的话 所有都显示footer -->
-
-  <div class="footer-outer animate__animated  animate__fadeInUp">
-    <div class="footer-inner">
-    <div class="footer-text">
-    <p>@Copyright：著作权归博主所有，转载请注明出处</p>
+      </div>
 
     </div>
-    <div class="footer-contact">
-    <ul class="footer-ul">
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
         
-        <li class="footer-li">
-            <a href="https://github.com/OBubbleOOO" target="_blank">
-                <i class="ri-github-line"></i>
-            </a>
-        </li>
+
         
-        <li class="footer-li">
-            <a href="mailto:3337250176@qq.com" target="_blank">
-                <i class="ri-mail-line"></i>
-            </a>
-        </li>
-        
-    </ul>
-    </div>
-    </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">欧泡果奶欧欧欧</span>
 </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
 
 
 
 
 
 
-<script src="/js/white.js"></script>
 
 
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
 
 </body>
 </html>
